@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>KQuiz • Vėliavos • Valiuta • Herbai • LT herbai • Sostinės • Lokatoriai • UNESCO</title>
+<style>
+:root{--bg:#070a12;--panel:#0f1427;--ink:#e6e9ef;--muted:#9fb0d6;--ok:#3bd671;--bad:#ff5964;--gold:#ffd166;--vio:#a78bfa;--aqua:#67e8f9}
+*{box-sizing:border-box}html,body{height:100%;margin:0;background:radial-gradient(1200px 500px at 50% -200px,#18203a 0%,#0b0f1d 55%),linear-gradient(180deg,#0b0f1d,#070a12);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:12px;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{padding:6px 10px;border-radius:999px;border:1px solid #273149;color:var(--muted);font-size:12px;white-space:nowrap;background:#0c1224}
+.brand{font-weight:900;letter-spacing:.6px;color:#cfe0ff}
+.card{background:radial-gradient(80% 120% at 100% 0%,rgba(138,180,255,.07),transparent 60%),linear-gradient(180deg,#0f162d 0%, #0b1022 100%);border:1px solid #1f2740;border-radius:18px;padding:14px;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.big{font-size:22px;font-weight:900;letter-spacing:.6px;text-transform:uppercase}
+.sub{font-size:12px;color:#9fb0d6}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+.banner{position:fixed;left:50%;top:12px;transform:translateX(-50%);background:#0f1320;border:1px solid #273149;padding:10px 14px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:6}
+.banner.show{opacity:1}
+.cover{width:100%;max-width:780px;aspect-ratio:16/9;border-radius:16px;overflow:hidden;border:1px solid #233154;background:#0b1124;display:flex;align-items:center;justify-content:center}
+.cover img{width:100%;height:100%;object-fit:contain;background:#0b1124}
+.answers{display:grid;grid-template-columns:1fr;gap:10px}
+.opt{border:1px solid #263154;background:#0d1327;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 22px rgba(0,0,0,.28)}
+.badge{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900}
+.badge.a{background:#2a365f}.badge.b{background:#36476f}.badge.c{background:#475883}.badge.d{background:#566799}
+.opt.correct{box-shadow:0 0 0 2px #2b6b43 inset}
+.opt.wrong{animation:shake .35s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.progress{height:10px;border-radius:999px;background:#121a35;overflow:hidden}
+.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--bad),var(--ok))}
+.cta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.footer{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lbItem{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px dashed #1e2435}
+.lbItem:last-child{border-bottom:none}
+.pulse{height:10px;border-radius:999px;background:linear-gradient(90deg,var(--vio),var(--aqua));animation:pulse 2s ease-in-out infinite;opacity:.75}
+.wsok{color:#c3ffb0}.wsbad{color:#ffb0b0}
+@media (min-width:640px){.grid{grid-template-columns:1fr 1fr}.answers{grid-template-columns:1fr 1fr}}
+.kcat{display:flex;gap:6px;align-items:center}
+.kcat .on{color:#cfe0ff;font-weight:800}
+</style>
+</head>
+<body>
+<div class="banner" id="banner"></div>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand">KQuiz • VĖLIAVOS • VALIUTA • HERBAI • LT HERBAI • SOSTINĖS • LOKATORIAI • UNESCO</div>
+    <div class="pill kcat">Kategorija: <span id="catName" class="on">—</span></div>
+    <div class="pill" id="ws">WS: …</div>
+    <div class="pill" id="roundTag">Raundas #1</div>
+  </div>
+
+  <div class="card">
+    <div class="h">
+      <div>
+        <div class="big" id="title">—</div>
+        <div class="sub" id="hint">Atsakymai per chatą: „a“ „b“ „c“ „d“. Vienas bandymas.</div>
+      </div>
+      <div class="pill" id="timer">00:20</div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="cover" id="mediaWrap"><div style="opacity:.6">Kraunama…</div></div>
+        <div class="progress" aria-label="laiko juosta"><i id="timebar"></i></div>
+        <div class="pulse"></div>
+        <div class="cta">
+          <div class="pill" id="info">Šaltinis: Wikidata / Wikipedia LT</div>
+          <button id="block" class="pill">Blokuoti šį klausimą</button>
+          <button id="skip" class="pill">Praleisti raundą</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="answers" id="answers"></div>
+        <div style="margin-top:8px" class="sub" id="result">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="card">
+      <div class="h"><span>Šio raundo nugalėtojai</span><span class="sub" id="roundStats">—</span></div>
+      <div id="roundLB"></div>
+    </div>
+    <div class="card">
+      <div class="h"><span>Sezoninė lentelė</span><span class="sub">+ taškai už teisingą ir greitį</span></div>
+      <div id="seasonLB"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= Wikipedia LT powered quiz =================
+   Categories:
+   - Flags (P41)
+   - Currency (P38 + P18/P487/P498)
+   - Coats of arms world (P94)
+   - Lithuanian local coats (P94, P17=Q37)
+   - Capitals (P36)
+   - Locator maps (P242)
+   - UNESCO sites (P1435=Q9259; answer country P17; image P18)
+   A/B/C/D via WebSocket /stream
+   Permanent blacklist by QID
+   ============================================================ */
+
+// ---------- Config ----------
+const ROUND_SEC=20, GAP_MS=3800, CORRECT_PTS=30, SPEED_BONUS=20, RETRY_MS=1000;
+
+// ---------- State ----------
+let round=1, phase='idle', correctIndex=-1, options=[], answered=new Map(), season=new Map();
+let secTick=null, barRAF=null, roundStart=0;
+let CAT='flag';
+let currentQID=null;
+
+// ---------- Pools ----------
+let POOL_FLAGS=[];     // {qid,nameLT,flagURL}
+let POOL_CURRENCY=[];  // {qid,countryLT,currencyLT,imgURL?,symbol?,iso?}  qid = country QID
+let POOL_COATS=[];     // {qid,nameLT,coatURL}
+let POOL_LTCOATS=[];   // {qid,nameLT,coatURL}
+
+// ---------- Blacklist ----------
+const BLK_KEY='kquiz_blacklist_v1';
+const blacklist=new Set(JSON.parse(localStorage.getItem(BLK_KEY)||'[]'));
+const isBlocked=qid=>qid && blacklist.has(qid);
+const persist=()=>localStorage.setItem(BLK_KEY, JSON.stringify([...blacklist]));
+function block(qid){ if(!qid) return; blacklist.add(qid); persist(); }
+
+// ---------- DOM ----------
+const $=s=>document.querySelector(s);
+const banner=t=>{const b=$('#banner'); b.textContent=t; b.classList.add('show'); setTimeout(()=>b.classList.remove('show'),1500);};
+const fmt=s=>new Date(s*1000).toISOString().substr(14,5);
+function setRoundTag(){ $('#roundTag').textContent=`Raundas #${round}`; }
+function setTimer(sec){ $('#timer').textContent=fmt(sec); }
+function setLB(){
+  const arr=[...answered.entries()].filter(([,x])=>x.correct).sort((a,b)=>a[1].ms-b[1].ms).slice(0,10);
+  $('#roundStats').textContent = arr.length ? `Teisingų: ${arr.length}` : '—';
+  $('#roundLB').innerHTML = arr.map(([n,x],i)=>`<div class="lbItem"><span>${i+1}. ${n}</span><strong>${(x.ms/1000).toFixed(2)}s • +${x.pts}</strong></div>`).join('') || '<div class="lbItem"><span>—</span><strong>—</strong></div>';
+  const seas=[...season.entries()].sort((a,b)=>b[1]-a[1]).slice(0,12);
+  $('#seasonLB').innerHTML = seas.map(([n,p])=>`<div class="lbItem"><span>${n}</span><strong>${p}</strong></div>`).join('') || '<div class="lbItem"><span>—</span><strong>—</strong></div>';
+}
+
+// ---------- Clock ----------
+const timebar=$('#timebar');
+function runClock(){
+  let left=ROUND_SEC; setTimer(left);
+  if(secTick) clearInterval(secTick);
+  const t0=performance.now(); roundStart=t0;
+  const barRun=()=>{const p=Math.min(1,(performance.now()-t0)/(ROUND_SEC*1000)); timebar.style.width=(p*100)+'%'; barRAF=requestAnimationFrame(barRun)};
+  barRun();
+  secTick=setInterval(()=>{left=Math.max(0,left-1); setTimer(left); if(left===0) endRound();},1000);
+}
+
+// ---------- Utils ----------
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]];} return a; }
+function randomAllowed(pool){
+  const arr=pool.filter(x=>!isBlocked(x.qid));
+  if(!arr.length) throw new Error('Pool empty after blacklist');
+  return arr[(Math.random()*arr.length)|0];
+}
+function renderOptions(opts){
+  const labels=['A','B','C','D'], cont=$('#answers'); cont.innerHTML='';
+  opts.forEach((name,i)=>{
+    const div=document.createElement('div'); div.className='opt'; div.dataset.idx=i;
+    div.innerHTML=`<div class="badge ${'abcd'[i]}">${labels[i]}</div><div class="optTxt">${name}</div>`;
+    cont.appendChild(div);
+  });
+}
+
+// ---------- Generic Wikidata MCQ ----------
+async function mcqGeneric({ itemClass='wd:Q3624078', // default: country
+                            prop='wdt:P36',          // property to ask about
+                            propNameLT='',
+                            answerIsItem=false,      // true ⇒ correct answer is itemLabel, false ⇒ valLabel
+                            imageFrom='none',        // 'none' | 'itemP18' | 'valP18' | 'propIsImage'
+                            extraFilter='' }) {
+  const sparql = `
+  SELECT ?item ?itemLabel ?val ?valLabel ?continentLabel ?itemImg ?valImg ?propImg WHERE {
+    ?item wdt:P31 ${itemClass} .
+    ?item ${prop} ?val .
+    OPTIONAL { ?item wdt:P30 ?continent . }
+    OPTIONAL { ?item wdt:P18 ?itemImg . }
+    OPTIONAL { ?val wdt:P18 ?valImg . }
+    BIND(?val AS ?propImg)
+    ${extraFilter}
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "lt,en". }
+  }`;
+  const url="https://query.wikidata.org/sparql?format=json&query="+encodeURIComponent(sparql);
+  const r=await fetch(url,{headers:{Accept:'application/sparql-results+json'}});
+  const rows=(await r.json()).results.bindings||[];
+
+  // bucket by continent to improve distractors
+  const buckets=new Map();
+  for(const m of rows){
+    const qid = (m.item?.value||'').split('/').pop();
+    const itemLabel = m.itemLabel?.value||'';
+    const valLabel  = m.valLabel?.value||'';
+    const cont = m.continentLabel?.value||'Kitas';
+    const itemImg = m.itemImg?.value||'';
+    const valImg  = m.valImg?.value||'';
+    const propImg = m.propImg?.value||'';
+    if(!qid || !itemLabel || (!valLabel && !answerIsItem)) continue;
+    if(!buckets.has(cont)) buckets.set(cont,[]);
+    buckets.get(cont).push({qid,itemLabel,valLabel,itemImg,valImg,propImg});
+  }
+  let pool=[...buckets.values()].sort((a,b)=>b.length-a.length)[0]||[];
+  if(pool.length<6) pool=[...buckets.values()].flat(); // fallback
+
+  // skip blacklisted
+  pool = pool.filter(x=>!isBlocked(x.qid));
+  if(!pool.length) throw new Error('Pool empty after blacklist');
+
+  const seed = pool[(Math.random()*pool.length)|0];
+  const correctText = answerIsItem ? seed.itemLabel : seed.valLabel;
+
+  const others = pool.filter(x=>(answerIsItem?x.itemLabel:x.valLabel)!==correctText);
+  const distract=[]; const used=new Set([correctText]);
+  for(const x of others){
+    const t = answerIsItem ? x.itemLabel : x.valLabel;
+    if(!used.has(t)){ distract.push(t); used.add(t); if(distract.length===3) break; }
+  }
+  while(distract.length<3) distract.push('—');
+
+  const opts=shuffle([correctText,...distract]);
+  const correctIdx=opts.indexOf(correctText);
+
+  // media
+  let mediaURL=null;
+  if(imageFrom==='itemP18' && seed.itemImg) mediaURL=seed.itemImg;
+  if(imageFrom==='valP18' && seed.valImg) mediaURL=seed.valImg;
+  if(imageFrom==='propIsImage' && seed.propImg) mediaURL=seed.propImg;
+
+  let mediaHTML, info;
+  if(mediaURL){
+    const path = mediaURL.includes('Special:FilePath')
+      ? mediaURL + (mediaURL.includes('?')?'&':'?')+'width=640'
+      : `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(decodeURIComponent(mediaURL.split('/').pop()))}?width=640`;
+    mediaHTML = `<img alt="${propNameLT||'vaizdas'}" src="${path}">`;
+    info = `Šaltinis: Wikidata (${prop.replace('wdt:','')}) / Commons`;
+  }else{
+    const head = answerIsItem ? correctText : seed.itemLabel;
+    mediaHTML = `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;font-size:22px;color:#cfe0ff">${head}<br><span style="opacity:.7">${propNameLT||''}</span></div>`;
+    info = `Šaltinis: Wikidata (${prop.replace('wdt:','')})`;
+  }
+
+  return {qid:seed.qid, correctIdx, opts, mediaHTML, info};
+}
+
+// Special: UNESCO site image ⇒ answer is country
+async function mcqUNESCO(){
+  const q=`
+  SELECT ?site ?siteLabel ?img ?country ?countryLabel WHERE {
+    ?site wdt:P1435 wd:Q9259 ; wdt:P17 ?country .
+    OPTIONAL { ?site wdt:P18 ?img . }
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "lt,en". }
+  }`;
+  const url="https://query.wikidata.org/sparql?format=json&query="+encodeURIComponent(q);
+  const r=await fetch(url,{headers:{Accept:'application/sparql-results+json'}});
+  let rows=(await r.json()).results.bindings||[];
+  rows = rows.map(m=>({
+    qid: (m.site.value||'').split('/').pop(),
+    site: m.siteLabel?.value||'',
+    img: m.img?.value||'',
+    country: m.countryLabel?.value||''
+  })).filter(x=>x.country && !isBlocked(x.qid));
+
+  if(!rows.length) throw new Error('UNESCO pool empty');
+
+  const seed = rows[(Math.random()*rows.length)|0];
+  const correct = seed.country;
+  const others = rows.filter(x=>x.country!==correct);
+  const distract=[]; const used=new Set([correct]);
+  for(const x of others){ if(!used.has(x.country)){ distract.push(x.country); used.add(x.country); if(distract.length===3) break; } }
+  while(distract.length<3) distract.push('—');
+  const opts=shuffle([correct,...distract]);
+  const correctIdx=opts.indexOf(correct);
+
+  let mediaHTML, info;
+  if(seed.img){
+    const path = seed.img.includes('Special:FilePath')
+      ? seed.img + (seed.img.includes('?')?'&':'?')+'width=640'
+      : `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(decodeURIComponent(seed.img.split('/').pop()))}?width=640`;
+    mediaHTML = `<img alt="UNESCO objektas" src="${path}">`;
+    info = 'Šaltinis: Wikidata (P1435/P18) / Commons';
+  }else{
+    mediaHTML = `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;font-size:22px;color:#cfe0ff">${seed.site}<br><span style="opacity:.7">UNESCO objektas</span></div>`;
+    info = 'Šaltinis: Wikidata (P1435)';
+  }
+
+  return {qid:seed.qid, correctIdx, opts, mediaHTML, info};
+}
+
+// ---------- Fetchers for pooled categories ----------
+async function loadFlags(){
+  if(POOL_FLAGS.length) return;
+  const q=`SELECT ?c ?cLabel ?flag WHERE {
+    ?c wdt:P31 wd:Q3624078; wdt:P41 ?flag.
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "lt,en". }
+  }`;
+  const url="https://query.wikidata.org/sparql?format=json&query="+encodeURIComponent(q);
+  const r=await fetch(url,{headers:{Accept:'application/sparql-results+json'}});
+  const rows=(await r.json()).results.bindings||[];
+  POOL_FLAGS = rows.map(m=>{
+    const qid=m.c.value.split('/').pop();
+    const nameLT=m.cLabel?.value||'';
+    let flag=m.flag?.value||'';
+    if(flag && !flag.includes('Special:FilePath')){
+      const fname=decodeURIComponent(flag.split('/').pop());
+      flag=`https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fname)}?width=640`;
+    }else if(flag){ flag += (flag.includes('?')?'&':'?')+'width=640'; }
+    return {qid,nameLT,flagURL:flag};
+  }).filter(x=>x.nameLT&&x.flagURL && !isBlocked(x.qid));
+}
+async function loadCurrencies(){
+  if(POOL_CURRENCY.length) return;
+  const q=`SELECT ?c ?cLabel ?cur ?curLabel ?img ?sym ?iso WHERE {
+    ?c wdt:P31 wd:Q3624078; wdt:P38 ?cur.
+    OPTIONAL { ?cur wdt:P18 ?img. }
+    OPTIONAL { ?cur wdt:P487 ?sym. }
+    OPTIONAL { ?cur wdt:P498 ?iso. }
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "lt,en". }
+  }`;
+  const url="https://query.wikidata.org/sparql?format=json&query="+encodeURIComponent(q);
+  const r=await fetch(url,{headers:{Accept:'application/sparql-results+json'}});
+  const rows=(await r.json()).results.bindings||[];
+  const seen=new Set();
+  POOL_CURRENCY = rows.map(m=>{
+    const qid=m.c.value.split('/').pop();
+    const countryLT=m.cLabel?.value||'';
+    const currencyLT=m.curLabel?.value||'';
+    let img=m.img?.value||'';
+    if(img){
+      if(!img.includes('Special:FilePath')){
+        const fname=decodeURIComponent(img.split('/').pop());
+        img=`https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fname)}?width=640`;
+      }else{ img += (img.includes('?')?'&':'?')+'width=640'; }
+    }
+    const symbol=m.sym?.value||'';
+    const iso=m.iso?.value||'';
+    return {qid,countryLT,currencyLT,imgURL:img||null,symbol:symbol||null,iso:iso||null};
+  }).filter(x=>{
+    if(!x.countryLT||!x.currencyLT) return false;
+    if(seen.has(x.qid)) return false; seen.add(x.qid);
+    return !isBlocked(x.qid);
+  });
+}
+async function loadCoats(){
+  if(POOL_COATS.length) return;
+  const q=`SELECT ?c ?cLabel ?coat WHERE {
+    ?c wdt:P31 wd:Q3624078; wdt:P94 ?coat.
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "lt,en". }
+  }`;
+  const url="https://query.wikidata.org/sparql?format=json&query="+encodeURIComponent(q);
+  const r=await fetch(url,{headers:{Accept:'application/sparql-results+json'}});
+  const rows=(await r.json()).results.bindings||[];
+  POOL_COATS = rows.map(m=>{
+    const qid=m.c.value.split('/').pop();
+    const nameLT=m.cLabel?.value||'';
+    let img=m.coat?.value||'';
+    if(img){
+      if(!img.includes('Special:FilePath')){
+        const fname=decodeURIComponent(img.split('/').pop());
+        img=`https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fname)}?width=640`;
+      }else{ img += (img.includes('?')?'&':'?')+'width=640'; }
+    }
+    return {qid,nameLT,coatURL:img||null};
+  }).filter(x=>x.nameLT && !isBlocked(x.qid));
+}
+async function loadLTLocalCoats(){
+  if(POOL_LTCOATS.length) return;
+  const q=`SELECT ?item ?itemLabel ?coat WHERE {
+    ?item wdt:P17 wd:Q37; wdt:P94 ?coat.
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "lt,en". }
+  }`;
+  const url="https://query.wikidata.org/sparql?format=json&query="+encodeURIComponent(q);
+  const r=await fetch(url,{headers:{Accept:'application/sparql-results+json'}});
+  const rows=(await r.json()).results.bindings||[];
+  const seen=new Set();
+  POOL_LTCOATS = rows.map(m=>{
+    const qid=m.item.value.split('/').pop();
+    const nameLT=m.itemLabel?.value||'';
+    let img=m.coat?.value||'';
+    if(img){
+      if(!img.includes('Special:FilePath')){
+        const fname=decodeURIComponent(img.split('/').pop());
+        img=`https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fname)}?width=640`;
+      }else{ img += (img.includes('?')?'&':'?')+'width=640'; }
+    }
+    return {qid,nameLT,coatURL:img||null};
+  }).filter(x=>{
+    if(!x.nameLT||!x.coatURL) return false;
+    if(seen.has(x.nameLT)) return false; seen.add(x.nameLT);
+    return !isBlocked(x.qid);
+  });
+}
+
+// ---------- Builders for pooled categories ----------
+function buildFlagQuestion(){
+  const seed = randomAllowed(POOL_FLAGS); currentQID=seed.qid;
+  const correct = seed.nameLT;
+  const pool = shuffle(POOL_FLAGS.filter(x=>x.nameLT!==correct)).slice(0,20);
+  const distract=[], used=new Set([correct]);
+  for(const it of pool){ if(!used.has(it.nameLT)){ distract.push(it.nameLT); used.add(it.nameLT); if(distract.length===3) break; } }
+  while(distract.length<3) distract.push('Nežinoma šalis');
+  const opts=shuffle([correct,...distract]);
+  return {correctIdx:opts.indexOf(correct), opts, mediaHTML:`<img alt="vėliava" src="${seed.flagURL}">`, info:'Wikidata (P41) / Commons'};
+}
+function buildCurrencyQuestion(){
+  const seed = randomAllowed(POOL_CURRENCY); currentQID=seed.qid;
+  const correct=seed.currencyLT, country=seed.countryLT;
+  const pool=shuffle(POOL_CURRENCY.filter(x=>x.currencyLT!==correct)).slice(0,40);
+  const distract=[], used=new Set([correct]);
+  for(const it of pool){ if(!used.has(it.currencyLT)){ distract.push(it.currencyLT); used.add(it.currencyLT); if(distract.length===3) break; } }
+  while(distract.length<3) distract.push('Nežinoma valiuta');
+  const opts=shuffle([correct,...distract]);
+  let mediaHTML, info;
+  if(seed.imgURL){ mediaHTML=`<img alt="valiuta" src="${seed.imgURL}">`; info=`Šalis: ${country} • Wikidata (P18)`; }
+  else if(seed.symbol){ mediaHTML=`<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:900;font-size:68px;color:#cfe0ff">${seed.symbol}</div>`; info=`Šalis: ${country} • Simbolis (P487)`; }
+  else { const tag=seed.iso?`${country} • ISO ${seed.iso}`:country; mediaHTML=`<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;font-size:22px;color:#cfe0ff">${tag}</div>`; info='Wikidata (P38/P498)'; }
+  return {correctIdx:opts.indexOf(correct), opts, mediaHTML, info};
+}
+function buildCoatQuestion(){
+  const seed = randomAllowed(POOL_COATS); currentQID=seed.qid;
+  const correct=seed.nameLT;
+  const pool=shuffle(POOL_COATS.filter(x=>x.nameLT!==correct)).slice(0,20);
+  const distract=[], used=new Set([correct]);
+  for(const it of pool){ if(!used.has(it.nameLT)){ distract.push(it.nameLT); used.add(it.nameLT); if(distract.length===3) break; } }
+  while(distract.length<3) distract.push('Nežinoma šalis');
+  const opts=shuffle([correct,...distract]);
+  const img = seed.coatURL || '';
+  const mediaHTML = img ? `<img alt="herbas" src="${img}">` : `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;font-size:22px;color:#cfe0ff">${correct}<br><span style="opacity:.7">Herbas</span></div>`;
+  return {correctIdx:opts.indexOf(correct), opts, mediaHTML, info:'Wikidata (P94) / Commons'};
+}
+function buildLTCoatQuestion(){
+  const seed = randomAllowed(POOL_LTCOATS); currentQID=seed.qid;
+  const correct=seed.nameLT;
+  const pool=shuffle(POOL_LTCOATS.filter(x=>x.nameLT!==correct)).slice(0,30);
+  const distract=[], used=new Set([correct]);
+  for(const it of pool){ if(!used.has(it.nameLT)){ distract.push(it.nameLT); used.add(it.nameLT); if(distract.length===3) break; } }
+  while(distract.length<3) distract.push('—');
+  const opts=shuffle([correct,...distract]);
+  return {correctIdx:opts.indexOf(correct), opts, mediaHTML:`<img alt="Lietuvos herbas" src="${seed.coatURL}">`, info:'Lietuva: Wikidata (P94) / Commons'};
+}
+
+// ---------- Category picker ----------
+function pickCategory(){
+  // Weighted: prioritize LT herbai
+  const r=Math.random();
+  if(r<0.55) return 'ltcoat';     // 55%
+  if(r<0.70) return 'coat';       // 15%
+  if(r<0.82) return 'flag';       // 12%
+  if(r<0.90) return 'currency';   // 8%
+  if(r<0.95) return 'capital';    // 5%
+  if(r<0.985) return 'locator';   // 3.5%
+  return 'unesco';                // 1.5%
+}
+
+// ---------- Flow ----------
+async function startRound(){
+  phase='idle'; answered.clear(); $('#result').textContent='—'; setLB();
+  setRoundTag(); banner(`Raundas #${round}`);
+  timebar.style.width='0%';
+  [...document.querySelectorAll('.opt')].forEach(e=>e.classList.remove('correct','wrong'));
+  currentQID=null;
+
+  try{
+    CAT = pickCategory();
+    let q=null;
+
+    if(CAT==='flag'){
+      $('#catName').textContent='Vėliavos'; $('#title').textContent='Atspėk šalį pagal vėliavą • A/B/C/D';
+      await loadFlags(); q = buildFlagQuestion();
+    } else if(CAT==='currency'){
+      $('#catName').textContent='Valiuta'; $('#title').textContent='Kokia šios šalies valiuta? • A/B/C/D';
+      await loadCurrencies(); q = buildCurrencyQuestion();
+    } else if(CAT==='coat'){
+      $('#catName').textContent='Herbai'; $('#title').textContent='Kuri tai šalis pagal herbą? • A/B/C/D';
+      await loadCoats(); q = buildCoatQuestion();
+    } else if(CAT==='ltcoat'){
+      $('#catName').textContent='Lietuvos herbai'; $('#title').textContent='Koks tai Lietuvos herbas? • A/B/C/D';
+      await loadLTLocalCoats(); q = buildLTCoatQuestion();
+    } else if(CAT==='capital'){
+      $('#catName').textContent='Sostinės'; $('#title').textContent='Kokia sostinė? • A/B/C/D';
+      q = await mcqGeneric({ itemClass:'wd:Q3624078', prop:'wdt:P36', propNameLT:'Sostinė', answerIsItem:false, imageFrom:'itemP18' });
+      currentQID = q.qid;
+    } else if(CAT==='locator'){
+      $('#catName').textContent='Lokatoriaus žemėlapiai'; $('#title').textContent='Kuri tai šalis pagal žemėlapį? • A/B/C/D';
+      q = await mcqGeneric({ itemClass:'wd:Q3624078', prop:'wdt:P242', propNameLT:'Lokatoriaus žemėlapis', answerIsItem:true, imageFrom:'propIsImage' });
+      currentQID = q.qid;
+    } else { // unesco
+      $('#catName').textContent='UNESCO'; $('#title').textContent='Kurioje šalyje šis UNESCO objektas? • A/B/C/D';
+      q = await mcqUNESCO(); currentQID = q.qid;
+    }
+
+    if(!q) throw new Error('builder error');
+
+    correctIndex=q.correctIdx; options=q.opts;
+    $('#mediaWrap').innerHTML = q.mediaHTML;
+    $('#info').textContent = q.info;
+    renderOptions(options);
+
+    phase='play'; runClock();
+    $('#result').innerHTML='Rašyk <span style="color:#cfe0ff;font-weight:800">a/b/c/d</span> chate';
+  }catch(e){
+    $('#result').textContent='API klaida. Bandom dar kartą…';
+    setTimeout(startRound, RETRY_MS);
+  }
+}
+
+function endRound(){
+  if(phase!=='play') return;
+  phase='reveal';
+  if(secTick) clearInterval(secTick);
+  if(barRAF) cancelAnimationFrame(barRAF);
+
+  [...document.querySelectorAll('.opt')].forEach((el,i)=>{ if(i===correctIndex) el.classList.add('correct'); });
+
+  const winners=[...answered.entries()].filter(([,x])=>x.correct).sort((a,b)=>a[1].ms-b[1].ms);
+  const names=winners.slice(0,3).map(w=>w[0]);
+  if(winners.length){
+    banner(`Teisinga: ${options[correctIndex]} • Greičiausi: ${names.join(', ')}`);
+    $('#result').innerHTML = `Teisingas atsakymas: <span style="color:#ffd166;font-weight:900">${options[correctIndex]}</span>`;
+  } else {
+    banner(`Teisinga: ${options[correctIndex]}`);
+    $('#result').innerHTML = `Nieks nespėjo. Teisinga: <span style="color:#ffd166;font-weight:900">${options[correctIndex]}</span>`;
+  }
+  setLB();
+  setTimeout(()=>{ round++; startRound(); }, GAP_MS);
+}
+
+// ---------- Answers ----------
+function handleAnswer(user, text){
+  if(phase!=='play') return;
+  const msg=String(text||'').trim().toLowerCase();
+  if(!/^[abcd]$/.test(msg)) return;
+  if(answered.has(user)) return;
+
+  const idx='abcd'.indexOf(msg);
+  const ms=performance.now()-roundStart;
+  const correct=(idx===correctIndex);
+
+  let pts=0;
+  if(correct){
+    const speed=Math.max(0, 1 - (ms/(ROUND_SEC*1000)));
+    pts=CORRECT_PTS + Math.round(speed*SPEED_BONUS);
+    season.set(user,(season.get(user)||0)+pts);
+  }
+  answered.set(user,{opt:idx, ms, correct, pts});
+
+  const el=document.querySelector(`.opt[data-idx="${idx}"]`);
+  if(el){ if(correct) el.classList.add('correct'); else { el.classList.add('wrong'); setTimeout(()=>el.classList.remove('wrong'),350); } }
+  setLB();
+}
+
+// ---------- WS (/stream) ----------
+const DEFAULT_PORT=8091;
+const hostGuess = location.host || (location.hostname ? `${location.hostname}:${DEFAULT_PORT}` : `localhost:${DEFAULT_PORT}`);
+const protoGuess = (location.protocol==='https:' ? 'wss' : 'ws');
+const wsURL = `${protoGuess}://${hostGuess}/stream`;
+let backoff=1500;
+function connectWS(){
+  const ws=new WebSocket(wsURL);
+  ws.onopen =()=>{ $('#ws').innerHTML='WS: <span class="wsok">prisijungta</span>'; backoff=1500; };
+  ws.onclose=()=>{ $('#ws').innerHTML='WS: <span class="wsbad">atsijungta</span>'; setTimeout(connectWS, backoff); backoff=Math.min(backoff*1.5,30000); };
+  ws.onerror=()=>{ $('#ws').innerHTML='WS: <span class="wsbad">klaida</span>'; };
+  ws.onmessage=(e)=>{
+    try{
+      const m=JSON.parse(e.data);
+      if(m.type==='chat'){
+        const name = m.displayName || m.user?.nickname || 'Žaidėjas';
+        handleAnswer(name, m.text || '');
+      }
+    }catch(_){}
+  };
+}
+connectWS();
+
+// ---------- Controls ----------
+$('#skip').addEventListener('click', endRound);
+$('#block').addEventListener('click', ()=>{
+  if(currentQID){ block(currentQID); banner('Užblokuota. Niekada neberodys.'); endRound(); }
+});
+
+// ---------- Start ----------
+setRoundTag(); startRound();
+</script>
+</body>
+</html>
